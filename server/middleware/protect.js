@@ -3,18 +3,18 @@ const User = require('../model/User');
 require('dotenv').config();
 const jwt_secret = process.env.jwt_secret
 
-exports.protect = async(req, res, next)=>{
+exports.protect = async(req, res)=>{
 let token;
 try {
     if (req.headers.authorization && req.headers.authorization.startsWith("Bearer")){
         token = req.header.authorization(" ")[1]
     }
-    next();
 
     if(!token){
         res.status(401).json({
             error: "Not authorized to access this route"
         })
+        return;
     }
 
     const decoded = jwt.verify(token, jwt_secret);
@@ -22,6 +22,7 @@ try {
 
     if(!user){
         res.status(404).json({message: 'Not authorized'})
+        return;
     }
     req.user  = user;
     console.log(user)
