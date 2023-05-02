@@ -1,7 +1,7 @@
 import React from 'react'
 import { useState } from 'react';
 import axios from 'axios';
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 
 
 const Login = () => {
@@ -9,6 +9,7 @@ const Login = () => {
   const [password, setPassword ] = useState("");
   const [email, setEmail] = useState("");
 
+  const navigate = useNavigate();
 
 
 const handleSubmit = async(e) =>{
@@ -16,6 +17,12 @@ const handleSubmit = async(e) =>{
   setUsername('');
   setPassword('');
   setEmail('');
+
+  navigate('/login')
+
+
+
+
   try{
   const response = await axios.post('http://localhost:5000/auth/login', {username, password, email})
   console.log(response.data)

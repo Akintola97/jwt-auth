@@ -1,6 +1,5 @@
 const express = require('express');
-const { register, login, content, usercontent } = require('../controller/authController');
-const { protect } = require('../middleware/protect');
+const { register, login, tokenVerification, userInfo } = require('../controller/authController');
 const auth_route = express.Router();
 
 
@@ -9,7 +8,6 @@ auth_route.post('/register', register)
 
 auth_route.post('/login', login)
 
-auth_route.get('/content', protect, usercontent)
-// auth_route.get('/content', usercontent)
+auth_route.get('/content', tokenVerification, userInfo )
 
-module.exports = auth_route;
+module.exports = auth_route; 

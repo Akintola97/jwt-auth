@@ -40,10 +40,11 @@ exports.register = async(req,res, next)=>{
 
 
 exports.login = async(req, res, next)=>{
-    const {username, password, email} = req.body;
+    const {username, password} = req.body;
     const user = await User.findOne({username})
-    const passwordValidation = await bcrypt.compare(password, user.password);
-    const Token  = jwt.sign({id: user._id}, secret, {expiresIn: '1hr'})
+    const passwordValidation = user && user.password ? await bcrypt.compare(password, user.password) : false;
+    const Token = user && user._id ? jwt.sign({id: user._id}, secret, {expiresIn: '1hr'}) : false;
+
 try {
     if(user && passwordValidation){
     return res.status(200).json({Token})
@@ -55,11 +56,62 @@ try {
 } catch (error) {
     console.log(error)
 }
+
+
 }
 
 
+exports.tokenVerification = async(req, res, next)=>{
+
+    try {
+    
+        if (!req.headers.authorization){
+            return res.status(401).json({message: 'Unauthorized!'})
+        }
+    
+        const token = req.headers.authorization.split(' ')[1]; 
+        
+        if(!token){
+            res.status(401).json({
+                error: "Not authorized to access this route"
+            })
+            return;
+        }
+    
+        jwt.verify(String(token), secret, (err, user)=>{
+            if(err){
+            return res.status(400).json({message: 'Invalid Token'});
+            }
+            // console.log(user.id)
+            req.id = user.id
+        })
+    next();
+
+    } catch (error) {
+        console.log(error)
+    }
+    }  
+    // //Bearer is added in front of the token to show that it is an authentication bearing token
+    // //we are exporting a function called protect. 
+
+///////////////////////////////////////////////////////////////////////
 
 
-exports.usercontent = async(req, res)=>{
-res.send('The user can view this page')
-}
+//Getting the details of the user from the decoded Token
+    exports.userInfo = async(req, res, next)=>{
+        const userId = req.id;
+        const user = await User.findById(userId, "-password") //This removes the password from the user being shown
+        try {
+            if(!user){
+                return res.status(404).json({
+                    message: 'User not found'
+                });
+            }
+            return res.status(200).json({user})
+        } catch (error) {
+            console.log(error)
+        }
+    }
+   
+    
+
